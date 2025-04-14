@@ -1,0 +1,471 @@
+# 資料結構與演算法期中筆記
+# 單元一 : Priority Queues
+## 1. Basics of Priority Queues
+### 簡介
+- Queue : 以排隊舉例，先排先處裡(先進先出)
+- Priority Queue : 以醫院舉例，依照受傷嚴重程度，越嚴重越先處裡
+- 排程上，每次都先判斷現在在等的人的優先程度，優先度最高的人先處理，處理完之後再次判斷優先程度直到所有人處理結束
+
+### Priority Queue 排序方法比較 :
+- Selection Sort : 
+    - InsertPQ() : 
+        - 不需要排序，為Unsorted list
+        - 時間複雜度為O(1)
+    - DeletePQ() : 
+        - 需要找到優先度最高的資料
+        - 時間複雜度為O(n)
+        ::: info
+        雖然插入很快，但是刪除時如果n值太大，效率不彰
+        :::
+        
+- Insertion Sort : 
+    - InsertPQ() : 
+        - 依照優先度完成排序，為Sorted list
+        - 時間複雜度為O(n)
+    - DeletePQ() : 
+        - 依照以排序的資料直接刪除
+        - 時間複雜度為O(1)
+        ::: info
+        雖然刪除很快，但是插入時如果n值太大，效率不彰
+        :::
+- Tree Sort (Binary Search Tree) : 
+    - InsertPQ() : 
+        - 根據優先度向根節點的左右插入
+        - 時間複雜度為O(logn)
+    - DeletePQ() : 
+        - 從樹的左下角開始刪除
+        - 時間複雜度為O(logn)
+        ::: info
+        但如果遇到Skewed Tree，插入刪除都會是O(n)，反過來說，樹形越是接近Heap，效率越高，插入刪除都是O(logn)
+        :::
+
+### Priority Queue的應用 : 鄰近搜尋
+  1. 用矩形區分位置
+  2. 算目前位置與所有矩形的距離
+  3. 再把距離最近的矩形中的目標拿出來計算距離
+  4. 求得與我最近的目標
+  5. 繼續求下一個最近的目標
+
+## 2. Heap
+### 簡介
+- 為Complete Binary Tree
+### 種類
+- min-Heap : 
+    - 保證root為最小值
+    - Insert時間複雜度為O(logn)
+    - Delete時間複雜度為O(logn)(取出只要O(1)，但是還需要調整樹使樹保持Heap)
+- max-Heap : 
+    - 保證root為最大值
+    - Insert時間複雜度為O(logn)
+    - Delete時間複雜度為O(logn)(取出只要O(1)，但是還需要調整樹使樹保持Heap)
+
+### ReheapUP() :
+1. 將資料放到buttom
+2. 由下而上去做比較
+3. 以max-heap為例，如果目前的值比父節點大，就做交換，直到根結點或是目前比父節點小
+:::info
+worst case為O(logn)
+:::
+
+### ReheapDown() : 
+1. 將root的值取走
+2. 用buttom的值代替root的值
+3. 刪除buttom的位置
+4. 開始由上往下維護Heap的結構
+5. 以max-heap為例，會往下找最大的值做比較，且如果root比較小就交換
+
+:::info
+此方法也可以運用在刪除root以外的節點
+:::
+
+### Huffman Code : 
+1. 將兩個頻率最小的葉節點(ABCDE)組起來，產生一個新的節點
+2. 持續直到所有資料變成一個樹
+3. 從root開始，左邊為0右邊為1
+4. 開始走訪
+5. ABCDE會得到自己的編碼，如圖 : ![image](https://hackmd.io/_uploads/SkuYecG0kl.png)
+:::info
+通常一編碼內不會包含其他編碼，不然會造成混淆(例如D : 10出現過了，就不會有其他的出現10開頭)
+:::
+
+## 3. Heap Sort
+- 補充說明semi-heap : 除了root是錯的，其他部份都是對的heap
+### heapInsert() Strategy : 
+- 主要概念為[ReheapUP()](#ReheapUP()-:)
+- 使用array，每次插入的位置剛好就是array的size
+- 如果目前位置為n，維護時，就會與位於((n - 1)/2)位置的父節點做比較
+
+### heapDelete() Strategy : 
+- 主要概念為[ReheapDown()](#ReheapDown()-:)
+- 使用array，刪除的就是array的第0個元素
+- 刪除完之後目前的heap就是semi-heap
+- 將array[arraysize]的元素補到array[0]
+- 使用heapRebuild()
+    #### heapRebuild() :
+    開始與左子節點(2n+1)、右子節點(2n+2)做三者比較，最大的放在最上面，有交換過的話繼續往下比較，持續直到沒有交換，或是已經換到底
+
+### 如何將陣列直接轉成堆積 : 
+1. 使用[heapRebuild()](#heapRebuild()-:)
+    - 遞迴呼叫heapRebuild(n, n-1, n-2, ....., 0)
+    - 每次呼叫都解決掉一個semi-heap
+    - 呼叫到0時就會變得像[heapDelete() Strategy :](#heapDelete()-Strategy-:)
+:::info
+Q : 如果呼叫順序由0~n是否會有問題? 
+A : 由於heapRebuild()只由上到下，無法與父節點比較，有可能直接違反min/max-heap的條件
+:::
+
+## 4. Heap Sort
+- 每次問最大最小後都要維護(維護一次的時間複雜度為O(logn))
+- 有n筆資料
+- 時間複雜度為O(nlogn)
+:::info
+與合併排序的時間複雜度相同
+:::
+### 優點 : 
+- 和合併排序相比，Heap Sort只需要一個陣列(空間較少)
+- 如果將root buttom交換，且不要動到目前的buttom的話，空間大小將永遠不變動，且完成之後array會由小到大排序
+
+
+
+# 單元二 : 堆積變形
+
+## Double-ended Priority Queue (DEPQ)
+- 目的 : 可得到優先度最高以及優先度最低的資料
+
+### 1. Min-max Heap
+- 偶數層為Min heap
+- 奇數層為Max heap
+- 時間複雜度為O(logn)
+    #### Insert() : 
+    1. 要先判斷現在在哪一層 (層數 = log(arraysize + 1 ))
+    2. 判斷這一層是min還是max heap
+    3. 先跟父節點比較
+        - 目前在min，如果父節點較小就交換
+        - 目前在max，如果父節點較大就交換
+    4. 開始跟祖父節點比較
+        - 目前在min，如果祖父節點較大就交換
+        - 目前在max，如果祖父節點較小就交換
+    5. 直到沒有交換，或是
+        - min層已經交換到樹根
+        - max層已經交換到第一層
+    #### Delete() : 
+    - 作法與[ReheapDown()](#ReheapDown()-:)相似
+    - 刪除最小值 : 
+        1. 不同之處在於buttom搬到root之後，要跟下一層的兩個節點中最小的比小，最小的放到min heap(root)
+        2. root開始跟子孫節點(有四個)比小，如果root比較大，跟子孫節點中最小的互換
+        3. 持續直到樹葉節點，或是沒有交換
+    - 刪除最大值 : 
+        1. buttom搬到刪除的位置之後，要跟下一層的兩個節點中最大的比大，最大的放到max heap(被刪除的節點)
+        2. 開始跟子孫節點(有四個)比大，如果目前比較小，跟子孫節點中最大的互換
+        3. 持續直到樹葉節點，或是沒有交換
+::: info
+Min-max Heap = 1 * min-heap + 2 * max-heaps
+:::
+
+### 2. Double-ended Heap (Deap)
+- root為空
+- root->left為min-heap
+- root->right為max-heap
+    #### Insert() : 
+    1. 找到同一層的對應節點
+        - 在min-heap : 比對應節點大就互換
+        - 在max-heap : 比對應節點小就互換
+    2. 開始往上比較
+        - 在min-heap : 比父節點大就互換
+        - 在max-heap : 比父節點小就互換
+    3. 直到沒有互換或是
+        - min-heap已經抵達array[1]
+        - max-heap已經抵達array[2]
+    :::info
+    如果沒有對應節點，就要比較父節點的對應節點
+    :::
+
+    #### Delete() :
+    - 以刪除最小為例子
+    1. 刪除最小值(array[1])
+    2. 把buttom的值換到array[1]
+    3. 刪除buttom
+    4. 每次都跟對應節點比較
+        - 如果比對應節點大就互換
+        - 沒有就往下比較，如果比子節點小就互換 
+    5. 步驟四完成之後
+        - 在min堆 : 繼續往下比較
+        - 在max堆 : 往上比較
+    :::info
+    如果沒有對應節點，就要比較父節點的對應節點
+    :::
+
+
+## Forest (union) of Heaps
+### 1. Binomial Heap
+- k : 代表root有幾個小孩
+- 鏈結串列根據k值由小到大排列
+- merge() : 只要有k值一樣的，就合併起來，鏈結串列接到其中資料較小的節點
+- 時間複雜度為O(logn)
+- 幾個節點需要幾棵樹? : 
+    - 圖 : 假如有九個節點，9 = $2^0$ + $2^3$，所以只需要兩棵樹
+    ![image](https://hackmd.io/_uploads/SyTreCPA1g.png)
+:::info
+不管資料內容，只要資料量相同，在Binomial Heap都長一樣
+:::
+
+- #### Delete : 
+    - 在鏈結串列中找最小的節點刪除
+    - 鏈結串列把被刪除的節點的所有子節點接起來
+    - 然後再檢查是否有k值相同的節點，有的話就合併
+
+
+
+
+### 2. Fibonacci Heap
+
+# 單元三 : 由下而上成長的二元平衡樹
+## 搜尋的基本觀念
+### The ADT table : 
+- 把一組字串當做**search key**
+    - EX : 如果table中有列出國家與國家的人口數，我就可以把"希臘"當成是希臘人口數的serch key，當我搜尋希臘就會得到希臘的人口數
+- ADT table的功能 : 
+    - tableinsert() : 新增資料
+    - tabledelete() : 刪除資料
+    - tableretrieve() : 得到search key對應的資料
+    - traversetable() : 看到目前table內所有的search key以及對應的資料
+        - 可能會根據使用者的要求調整不同的排序方式
+### 不同的排序方式 : 
+- 線性排序 : 
+    - Unsorted : 
+        - array-based
+        - pointer-based
+    - Sorted : 
+        - array-based
+        - pointer-based
+- 非線性排序
+    - Binary search tree
+
+### 搜尋方式的比較 : 
+#### Linear array-based : 
+- Linear unsorted array-based : 
+    - insert : O(1) (知道arraysize可以直接插入最後方)
+    - delete : O(n) (刪除完要將資料一筆一筆往前擺)
+- Linear sorted array-based : 
+    - insert : O(n)
+    - delete : O(n)
+    - retrieve可以使用二元搜尋樹 : O(logn)
+#### Linear pointer-based : 
+- Linear unsorted pointer-based :
+    - insert : O(1) (直接接在最前方)
+    - delete : O(n) 
+    - retrieve : O(n)
+- Linear sorted pointer-based :
+    - insert : O(n) 
+    - delete : O(n) 
+    - retrieve : O(n)
+#### Binary search tree : 
+- insert : O(logn) 
+- delete : O(logn) 
+- retrieve : O(logn)
+
+:::info
+結論 : linear通常有排序的效率並不會比較好
+且對於搜尋來說，nonlinear其實會是個比較好的選擇
+:::
+
+### Binary search tree的效率問題 : 
+- 雖然通常時間複雜度為O(logn)，但是因為不可控的樹高(資料可能只往左邊或右邊插入)，時間複雜度可能會變O(n)而效率不佳或不可控制
+- 圖例(因資料而導致樹變成鏈結串列) : 
+![image](https://hackmd.io/_uploads/ryHz-gOCke.png)
+- 為了防止這個形狀出現，有幾種搜尋樹可以使用
+    - 由下而上生長 : 
+        - 2-3 tree
+        - 2-3-4 tree
+    - 由上而下生長 : 
+        - AVL tree
+        - Red-black tree
+## 2-3 tree
+- 並不是二元樹
+- 如果節點有2個小孩，就叫2-node
+- 如果節點有3個小孩，就叫3-node
+- key : 
+    - 2-node 會有 1 個key
+    - 3-node 會有 2 個key
+- 相同資料量之下，保證不會比Binary search tree的**最小高度**還要高
+- 圖例 : 為何2-3 tree會比Binary search tree還要有優勢
+![image](https://hackmd.io/_uploads/B1eVH9dRyl.png)
+
+
+### Insert() : 
+#### 概念 : 
+- 2-node
+    - 如果目前插入的節點 < key : 往左
+    - 如果目前插入的節點 > key : 往右
+- 3-node
+    - 設兩個key名稱為F(irst)、S(econd)
+    - 如果目前插入的節點 < F : 往左
+    - 如果目前插入的節點 > F 且 < S : 往中
+    - 如果目前插入的節點 > S : 往右
+- 插入時如果有複數key，要由小到大排序
+:::info
+因為2-3 tree 最多只能有兩個key，如果插入時發現有3個key就要Split()，
+:::
+#### Split() : 
+- 遇到有三個key的節點
+    - 1. 把中間大小的key往上合併到他的父節點
+    - 2. 把左右兩個key分開成為新的節點
+#### 實作
+1. 從root遞迴搜尋直到找到葉節點(根據大小選擇往左往右)
+2. 插入
+3. 如果目前是2 key節點，插入就完成
+4. 如果目前是3 key節點，就要split()
+    - 特例 : 如果沒有父節點，中間值獨自成為root
+    - 特例 : 如果是內部節點，split之後就要把原本的子節點接到正確的位置
+        - 圖例 : 
+        ![image](https://hackmd.io/_uploads/HJ9nu5ORyg.png)
+### Delete() : 
+#### delete概念 : 
+1. 刪除
+    - 如果刪除完key之後，node還剩下其他key，就不用再做其他處理
+2. 重新分配(前提 : 兄弟節點中有兩個key的節點)
+    - 不須新增或刪除節點
+    - 如果刪除葉節點之後葉節點為空，就重新分配
+        - 找到兄弟節點中有兩個key的節點做分配
+        - 圖例 : 
+        ![image](https://hackmd.io/_uploads/HJMka5_CJg.png)
+        - 圖中的行為叫做 : Rotate(旋轉)
+
+
+3. 合併(前提 : 所有兄弟節點都只有1個key)
+    - 因為找不到可分配的，所以此葉節點必須被刪除，刪除之後從其父節點取key合併到兄弟節點
+        - 圖例 : 
+        ![image](https://hackmd.io/_uploads/rJ-QJid0yl.png)
+    - 合併結束之後會有兩種情況
+        - 父節點還有key : 刪除key的步驟結束
+        - 父節點空了 : 父節點就要考慮是做重新分配還是刪除
+
+4. 子節點的重新分配
+    - 當發生重新分配時，這個節點是有子節點的(也就是內部節點)，就必須重新分配子節點 
+        - 圖例 : 
+        ![image](https://hackmd.io/_uploads/Bk1Fxou0Jg.png)
+
+#### 實作 : 
+- 從root往下找找到要刪除的資料
+- 刪除
+- 開始做判斷 : 參考[Delete()種類](#delete概念-:)
+- 不能直接刪除root以及內部節點 : 
+    - 要先使用類似[ReheapDown()](#ReheapDown()-:)的概念，去找到要刪除的節點的中序後繼者，並做交換
+    - 刪除之後再去檢查哪個節點為空，再做[Delete()種類](#delete概念-:)的判斷
+    - 圖例1 : 
+    ![image](https://hackmd.io/_uploads/SkfEUj_01x.png)
+    - 圖例2 : 
+    ![image](https://hackmd.io/_uploads/H1NzvjOAkx.png)
+
+
+:::info
+因為中序後繼者的值與被刪除值最為接近，互換不會造成結構的問題
+:::
+
+
+
+# 單元四 : 由上而下成長的二元平衡樹
+## AVL tree
+- 目的 : 追求Binary search tree的最小高度
+- 在每次insert之後都會檢查是否平衡
+- 平衡的定義 : -1 <= 左子樹樹高-右子樹樹高 <= 1
+- 只要不平衡，就會做rotation
+- rotation圖例 : ![image](https://hackmd.io/_uploads/BJe1A3_CJe.png)
+:::info
+因為每次都會檢查平衡，所以每次資料的新增，高度差只會+1或-1，也就是說只要檢查到+2或-2就可以旋轉
+:::
+### 旋轉的條件與種類
+- 設BF = 左子樹樹高 - 右子樹樹高
+1. LL
+    - 條件 : BF > 1，且目前資料小於root->left的資料
+    - 旋轉方式 : LL(root)
+    - LL()示意圖 : 
+    ![image](https://hackmd.io/_uploads/rJdcQTOAJg.png)
+
+2. RR
+    - 條件 : BF < -1，且目前資料大於root->left的資料
+    - 旋轉方式 : RR(root)
+    - RR()示意圖 : 
+    ![image](https://hackmd.io/_uploads/rk26m6u0Jl.png)
+
+3. LR
+    - 條件 : BF > 1，且目前資料大於root->left的資料
+    - 旋轉方式 : 
+        - 先做RR(root->left)
+        - 再做LL(root)
+    - 示意圖 : 
+    ![image](https://hackmd.io/_uploads/BJrDBa_A1l.png)
+
+
+4. RL
+    - 條件 : BF < -1，且目前資料小於root->left的資料
+    - 旋轉方式 : 
+        - 先做LL(root->right)
+        - 再做RR(root)
+    - 示意圖
+    ![image](https://hackmd.io/_uploads/rkDsBTuRkl.png)
+### AVL tree 的刪除 : 
+- 最佳方式 : 刪除的是葉節點，然後檢查高度差
+- 方法 : 將要刪除的目標跟中序後繼者交換，就不會對結構造成影響。
+- 跟插入不一樣的是，可能會有多處不平衡，要持續往上檢查
+
+## Red-black tree
+
+### 原理 : 
+- 將3-node和4-node表現成二元搜尋樹的狀態
+- 有可能遇到skewed的狀態，所以也會做rotation
+- 保持了2-3-4樹平衡的優點，並且沒有2-3-4樹會浪費空間的缺點
+- 節點會區分兩種顏色ex紅色和黑色
+### 特性 : 
+- 從root走到leaf，不管哪一條，black ptr數量相同(對應2-3-4樹的平衡特性)
+- 不會連續出現兩個red pointer (這樣轉換成2-3-4 tree 會分不出哪些key在同一個node中)
+### 2-3-4 tree如何轉換成 Red-black tree
+- 4-node : 
+![image](https://hackmd.io/_uploads/BkDJPktCJe.png)
+- 3-node : 
+![image](https://hackmd.io/_uploads/S1H4wkY01x.png)
+:::info
+如果Red-black tree中的節點兩邊都是紅色的，可視為4-node
+如果一邊是紅色一邊是黑色，可視為3-node
+如果都是黑的，可視為2-node
+:::
+
+### Split() : 
+- 4-node spit : 
+    - 父節點是2-node : 只需要換顏色
+        - 示意圖 : 
+        ![image](https://hackmd.io/_uploads/Hk5aglYRyl.png)
+    - 父節點是3-node : 
+        - 換完顏色之後，有可能發生連續兩個red ptr
+        - 這時候就需要旋轉
+        - 示意圖 : 
+        ![image](https://hackmd.io/_uploads/BkxcZetRkx.png)
+### Insert() : 
+#### 主要概念 : 
+- 從root往leaf找，有經過4-node(兩邊都是red ptr)就split(換顏色)
+    - 分裂的次數跟樹高成正比
+- 新插入的節點用red ptr指著
+- 如果有連續兩個red ptr就做旋轉
+
+### Delete() : 
+#### 主要概念 : 
+- 找到要刪除節點
+    - 此節點有兩個子節點 : 找到要刪除節點的中序後繼者，然後互換位置
+    - 此節點有一個子節點 : 子節點直接取代要刪除的節點
+    - 如果此節點是樹葉
+        - red ptr : 直接刪掉
+        - black ptr :
+            - 兄弟節點沒有子節點 : 把父節點的red ptr改成black ptr，把兄弟節點的black ptr改成red ptr 
+            - 兄弟節點只有子節點 : 旋轉(要根據左右高度判斷旋轉種類)+重新上色
+                - 示意圖 : 
+                ![image](https://hackmd.io/_uploads/BJ8l3-F0kl.png)
+
+            
+
+
+
+
+
+
+
+
