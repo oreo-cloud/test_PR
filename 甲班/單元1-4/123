@@ -1,0 +1,472 @@
+//11227110黃筱婷 11227133白文君
+#include <iostream>
+#include <fstream>  //ifstream ofstream
+#include <string>
+#include <vector>
+#include <sstream> //使用istringstream
+
+using namespace std;
+
+class List {
+ private:
+  vector<string> school_num;  //學校代碼
+  vector<string> school_name;  //學校名稱
+  vector<string> dept_num;  //科系代碼
+  vector<string> dept_name;  //科系名稱
+  vector<string> division_type;  //日間/進修部
+  vector<string> degree_type;  //等級別
+  vector<string> student_num;  //學生數 (任務二)
+  vector<string> teacher_num;  //教師數
+  vector<string> graduate_num;  //畢業生數 (任務二)
+  vector<string> city_name;  //縣市名稱
+  vector<string> system_type;  //體系別
+  vector<string> file_name_array; //暫存檔名(多個檔案)
+  int sum = 0;
+
+  string school_num_temp;  //學校代碼
+  string school_name_temp;
+  string dept_num_temp;  //科系代碼
+  string dept_name_temp;
+  string division_type_temp;
+  string degree_type_temp;
+  string student_num_temp;
+  string teacher_num_temp;
+  string graduate_num_temp;
+  string city_name_temp;
+  string system_type_temp;
+
+ public:
+  int Data_array(ifstream &input_file, bool is_input, bool is_file2) { 
+    string row;
+    if (is_input) {  //如果為input檔
+      getline(input_file, row);  //跳過第一列
+    }
+    int count = 0;
+    while (getline(input_file, row)) {  //讀取input_file，並在遇到換行前將該列暫存至row
+      istringstream iss(row);  //將row改為為輸入串流模式
+      vector<string> row_data;  //儲存分割後的資料
+      string data;
+      while (getline(iss, data, '\t')) { //遇到\t時，將列中資料存入data
+        row_data.push_back(data);  //將data存入vector中
+      }
+      if (!is_file2) {  //如果非第二個檔，就加入資料
+        school_num.push_back(row_data[0]);
+        school_name.push_back(row_data[1]);
+        dept_num.push_back(row_data[2]);
+        dept_name.push_back(row_data[3]);
+        division_type.push_back(row_data[4]);
+        degree_type.push_back(row_data[5]);
+        student_num.push_back(row_data[6]);
+        teacher_num.push_back(row_data[7]);
+        graduate_num.push_back(row_data[8]);
+        city_name.push_back(row_data[9]);
+        system_type.push_back(row_data[10]);
+        count++;
+      } else {  //如果是第二個檔，比較後加入資料
+        school_num_temp = row_data[0];
+        school_name_temp = row_data[1];
+        dept_num_temp = row_data[2];
+        dept_name_temp = row_data[3];
+        division_type_temp = row_data[4];
+        degree_type_temp = row_data[5];
+        student_num_temp = row_data[6];
+        teacher_num_temp = row_data[7];
+        graduate_num_temp = row_data[8];
+        city_name_temp = row_data[9];
+        system_type_temp = row_data[10];
+
+        bool school_exist = false;
+        bool dept_exist = false;
+        for (int i = 0; i < school_num.size(); i++) {
+          if (school_name_temp == school_name[i]) {  //如果學校名稱存在
+            school_exist = true;
+            if (dept_name_temp == dept_name[i]) {  //如果科系名稱存在
+              dept_exist = true;
+              while (dept_name_temp == dept_name[i + 1]) {  //直到相同科系的最末端
+                i++;
+              }
+              school_num.insert(school_num.begin() + i + 1, school_num_temp);
+              school_name.insert(school_name.begin() + i + 1, school_name_temp);
+              dept_num.insert(dept_num.begin() + i + 1, dept_num_temp);
+              dept_name.insert(dept_name.begin() + i + 1, dept_name_temp);
+              division_type.insert(division_type.begin() + i + 1, division_type_temp);
+              degree_type.insert(degree_type.begin() + i + 1, degree_type_temp);
+              student_num.insert(student_num.begin() + i + 1, student_num_temp);
+              teacher_num.insert(teacher_num.begin() + i + 1, teacher_num_temp);
+              graduate_num.insert(graduate_num.begin() + i + 1, graduate_num_temp);
+              city_name.insert(city_name.begin() + i + 1, city_name_temp);
+              system_type.insert(system_type.begin() + i + 1, system_type_temp);
+              count++;
+              break;
+            } 
+          }
+        }
+        if (school_exist && !dept_exist) {  //學校存在，科系不存在
+          for (int i = 0; i < school_num.size(); i++) {
+            if (school_name_temp == school_name[i]) {  //學校相同時
+              while (school_name_temp == school_name[i + 1]) {  //直到相同學校的最末端
+                i++;
+              }
+              school_num.insert(school_num.begin() + i + 1, school_num_temp);
+              school_name.insert(school_name.begin() + i + 1, school_name_temp);
+              dept_num.insert(dept_num.begin() + i + 1, dept_num_temp);
+              dept_name.insert(dept_name.begin() + i + 1, dept_name_temp);
+              division_type.insert(division_type.begin() + i + 1, division_type_temp);
+              degree_type.insert(degree_type.begin() + i + 1, degree_type_temp);
+              student_num.insert(student_num.begin() + i + 1, student_num_temp);
+              teacher_num.insert(teacher_num.begin() + i + 1, teacher_num_temp);
+              graduate_num.insert(graduate_num.begin() + i + 1, graduate_num_temp);
+              city_name.insert(city_name.begin() + i + 1, city_name_temp);
+              system_type.insert(system_type.begin() + i + 1, system_type_temp);
+              count++;
+              break;
+            }
+          }
+        }
+        if (!school_exist) {  //如果學校存在，直接加到檔案末端
+          school_num.push_back(school_num_temp);
+          school_name.push_back(school_name_temp);
+          dept_num.push_back(dept_num_temp);
+          dept_name.push_back(dept_name_temp);
+          division_type.push_back(division_type_temp);
+          degree_type.push_back(degree_type_temp);
+          student_num.push_back(student_num_temp);
+          teacher_num.push_back(teacher_num_temp);
+          graduate_num.push_back(graduate_num_temp);
+          city_name.push_back(city_name_temp);
+          system_type.push_back(system_type_temp);
+          count++;
+        }
+      }
+    }
+    return count;  //回傳資料筆數
+  }
+
+  bool InputFile(string input, bool IsChoice1) {
+    ifstream input_file;
+    string new_file_name = "input" + input + ".txt";  //建立檔名
+    input_file.open(new_file_name);  //開啟檔案
+    if (!input_file.is_open()) {  //檔案不存在
+      cout << "### input" << input << ".txt does not exist! ###\n\n";
+      return false;
+    }
+    int count = Data_array(input_file, true, false);  //是input檔，但不是第二個檔
+    if (IsChoice1) {  //如果為任務一則印出資料數量
+      cout << "Number of records = " << count << "\n";
+    }
+    input_file.close();  //關閉檔案
+    return true;
+  }
+  
+  void OutputFile(string input) {
+    ofstream output_file;
+    string new_file_name = "copy" + input + ".txt";  
+    output_file.open(new_file_name, ios::out);  //打開一個新檔並將檔案設為可覆蓋
+    for (int i = 0; i < school_num.size(); i++) {  //將vector中的資料存入新檔
+      output_file << school_num[i] << "\t"
+      << school_name[i] << "\t" << dept_num[i] << "\t"
+      << dept_name[i] << "\t" << division_type[i] << "\t" 
+      << degree_type[i] << "\t" << student_num[i] << "\t" 
+      << teacher_num[i] << "\t" << graduate_num[i] << "\t"
+      << city_name[i] << "\t" << system_type[i] << "\n";
+    }
+    output_file.close();
+  }
+
+  void OutputMergeFile(vector<string> file_name_array) {
+    ofstream merge_file;
+    string new_file_name = "output";
+    for (int i = 0; i < file_name_array.size(); i++) {
+      new_file_name += file_name_array[i];  //將存在vector中的檔名存入new_file_name
+      if (i != file_name_array.size() - 1) {
+        new_file_name += "_";
+      }
+    }
+    new_file_name += ".txt";
+    merge_file.open(new_file_name);  //打開新檔
+    for (int i = 0; i < school_num.size(); i++) {  //將已合併的資料存入新檔
+      merge_file << school_num[i] << "\t" 
+      << school_name[i] << "\t" << dept_num[i] << "\t"
+      << dept_name[i] << "\t" << division_type[i] << "\t" 
+      << degree_type[i] << "\t" << student_num[i] << "\t" 
+      << teacher_num[i] << "\t" << graduate_num[i] << "\t"
+      << city_name[i] << "\t" << system_type[i] << "\n";
+    }
+    merge_file.close();
+  }
+  
+  void SelectFile(ofstream &copy_file, int std_num, int gra_num, string input) {
+    InputFile(input, false);  //將檔案資料存入vector，非任務一
+    vector<int> std_digit;
+    vector<int> gra_digit;
+    int count = 0;
+    for (int i = 0; i < student_num.size(); i++) {  //將學生數及畢業人數改為整數型態，並存入整數vector
+      std_digit.push_back(stoi(student_num[i]));
+      gra_digit.push_back(stoi(graduate_num[i]));
+    }
+    for (int i = 0; i < student_num.size(); i++) {
+      if (std_digit[i] >= std_num && gra_digit[i] >= gra_num) {  //篩選符合條件的資料，並覆蓋copy檔
+        copy_file << school_num[i] << "\t" 
+        << school_name[i] << "\t" << dept_num[i] << "\t"
+        << dept_name[i] << "\t" << division_type[i] << "\t" 
+        << degree_type[i] << "\t" << student_num[i] << "\t" 
+        << teacher_num[i] << "\t" << graduate_num[i] << "\t"
+        << city_name[i] << "\t" << system_type[i] << "\n";
+        count++;
+      }
+    }
+    cout << "Number of records = " << count << "\n";  //輸出覆蓋後資料筆數
+  }
+  
+  void MergeFile(ifstream &file1, ifstream &file2, string file1_string, string file2_string, bool file1_is_saved) {
+    if (!file1_is_saved) {
+      int count1 = Data_array(file1, false, false);  //如果是第一個檔案則存入vector中
+      file_name_array.push_back(file1_string);  //記錄檔名
+      sum += count1;  //計算筆數
+    }
+    int count2 = Data_array(file2, false, true);  //第二個檔案後則用string一一存入vector中
+    file_name_array.push_back(file2_string);  //記錄檔名
+    sum += count2;  //計算筆數
+     
+  }
+
+  vector<string> FileNameArray() {  //取得file_name_array
+    return file_name_array;
+  }
+
+  int GetSum() {  //取得sum
+    return sum;
+  }
+
+  bool IsNumber(string input) {  //檢查字串是否為數字
+    for (int i = 0; i < input.length(); i++) {
+      if (!isdigit(input[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+
+class Mission {
+ private:
+  List list;
+ public:
+  void M1() {
+    while(1) {
+      cout << "Input 201, 202, ...[0]Quit): ";
+      string input;
+      cin >> input;
+      cout << "\n";
+      if (input == "0") {  //輸入為0時，任務一結束
+        return;
+      } else if (list.InputFile(input, true)) {  //開啟已存在檔案
+        list.OutputFile(input);  //存入新檔
+        cout << "\n";
+        return;
+      }
+    }
+  }
+  
+  void M2() {
+    while(1) {
+      cout << "Input 201, 202, ...[0]Quit): ";
+      string input;
+      cin >> input;
+      cout << "\n";
+      ifstream check_file;
+      string copy_file_name = "copy" + input + ".txt";
+      check_file.open(copy_file_name);  
+      if (input == "0") {
+        return;
+      } else if (!check_file.is_open()) {  //用check_file確認copy檔是否存在
+        cout << "### copy" << input << ".txt does not exist! ###\n\n";
+        continue;  //如果不存在，則重新輸入
+      } else if (check_file.peek() == EOF) {  //如果檔案存在，但資料為空，則直接結束
+        return;
+      } else {
+        ofstream copy_file;
+        copy_file.open(copy_file_name, ios::out);  //如果檔案已存在，則開啟此檔並設為可覆蓋
+        string std_num_string;
+        string gra_num_string;
+        int std_num = 0;
+        int gra_num = 0;
+        while (1) {
+          cout << "Input a lower bound on the number of students: ";
+          cin >> std_num_string;
+          cout << "\n";
+          if (list.IsNumber(std_num_string)) {  //確認字串為數字後，即轉為整數型態
+            std_num = stoi(std_num_string);
+            if (std_num >= 0 && std_num <= 9999) {
+              break;
+            } else {
+              cout << "### It is NOT in [0,9999] ###\n\n";
+            }
+          }
+        }
+        while (1) {
+          cout << "Input a lower bound on the number of graduates: ";
+          cin >> gra_num_string;
+          cout << "\n";
+          if (list.IsNumber(gra_num_string)) {  //確認字串為數字後，即轉為整數型態
+            gra_num = stoi(gra_num_string);
+            if (gra_num >= 0 && gra_num <= 9999) {
+              break;
+            } else {
+              cout << "### It is NOT in [0,9999] ###\n\n";
+            }
+          }
+        }
+        list.SelectFile(copy_file, std_num, gra_num, input);  //篩選資料並覆蓋
+        cout << "\n";
+        return;
+      }
+    }
+  }
+  
+  void M3() {
+    bool exist_file1 = false;
+    string file1_string;
+    string file2_string;
+    while(1) {
+      cout << "Input 201, 202, ...[0]Quit): ";
+      string input;
+      cin >> input;
+      cout << "\n";
+      ifstream check_file;
+      string copy_file_name = "copy" + input + ".txt";
+      check_file.open(copy_file_name);
+      if (input == "0") {
+        return;
+      } else if (!check_file.is_open()) {  //用check_file確認copy檔是否存在
+        cout << "### copy" << input << ".txt does not exist! ###\n\n";
+        continue;
+      } else if (check_file.peek() == EOF) {  //如果檔案存在，但資料為空，則直接結束
+        return;
+      } else {
+        if (!exist_file1) {  //如果第一個檔還沒有存在
+          exist_file1 = true;
+          file1_string = input;  //將input存入file1_string
+        } else {  //第一個檔已存在
+          file2_string = input;  //將input存入file2_string
+          ifstream file1;
+          ifstream file2;
+          string copy_file1_name = "copy" + file1_string + ".txt";
+          string copy_file2_name = "copy" + file2_string + ".txt";
+          file1.open(copy_file1_name);
+          file2.open(copy_file2_name);
+          list.MergeFile(file1, file2, file1_string, file2_string, false);  //合併兩個檔案，false為任務四判斷時使用
+          vector<string> file_name_array = list.FileNameArray();  //取得檔名vector
+          list.OutputMergeFile(file_name_array);  //輸出合併檔
+          int sum = list.GetSum();  //取得合併後總筆數
+          cout << "Number of records = " << sum << "\n";  //輸出總筆數
+          cout << "\n";
+          return;
+        }
+      }
+    }
+  }
+
+  void M4() {
+    bool exist_file1 = false;
+    bool file1_is_saved = false;
+    string file1_string;
+    int merged_num = 0;
+    int merged_num_check = 0;
+    while(1) {
+      string file2_string;
+      cout << "Input 201, 202, ...[0]Quit): ";
+      string input;
+      cin >> input;
+      cout << "\n";
+      ifstream check_file;
+      string copy_file_name = "copy" + input + ".txt";
+      check_file.open(copy_file_name);
+      if (input == "0") {
+        return;
+      } else if (!check_file.is_open()) {  //用check_file確認copy檔是否存在
+        cout << "### copy" << input << ".txt does not exist! ###\n\n";
+        continue;
+      } else if (check_file.peek() == EOF) {  //如果檔案存在，但資料為空，則直接結束
+        return;
+      } else {
+        if (!exist_file1) {  //如果第一個檔還沒有存在
+          exist_file1 = true;
+          file1_string = input;  //將input存入file1_string
+          ifstream file1;
+          string copy_file1_name = "copy" + file1_string + ".txt";
+          file1.open(copy_file1_name);  //開啟基準檔
+          while (1) {
+            string merged_num_string;
+            cout << "Input the number of files to be merged: ";
+            cin >> merged_num_string;
+            cout << "\n";
+            if (list.IsNumber(merged_num_string)) {
+              merged_num = stoi(merged_num_string);
+              if (merged_num >= 1 && merged_num <= 4) {
+                break;
+              } else {
+                cout << "### It is NOT in [1,4] ###\n\n";
+              }
+            } 
+          }
+        } else {  //第一個檔已存在
+          merged_num_check++;
+          file2_string = input;  //將input存入file2_string
+          ifstream file1;
+          ifstream file2;
+          string copy_file1_name = "copy" + file1_string + ".txt";
+          string copy_file2_name = "copy" + file2_string + ".txt";
+          file1.open(copy_file1_name);
+          file2.open(copy_file2_name);
+          if (!file1_is_saved) {  //如果第一個檔(基準檔)尚未存入vector
+            list.MergeFile(file1, file2, file1_string, file2_string, false);  //將基準檔的資料存入存入vector，false為判斷基準檔是否已存入
+            file1_is_saved = true;  //已存入，改為true
+          } else {
+            list.MergeFile(file1, file2, file1_string, file2_string, true);  //將基準檔的資料存入存入string，true為判斷基準檔是否已存入
+            if (merged_num_check == merged_num) {  //如果已經存到最後一個檔
+              vector<string> file_name_array = list.FileNameArray();  //取得檔名vector
+              list.OutputMergeFile(file_name_array);  //輸出合併檔
+              int sum = list.GetSum();  //取得合併後總筆數
+              cout << "Number of records = " << sum << "\n";  //輸出總筆數
+              cout << "\n";
+              return;
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+int main() {
+    while (1) {
+      std::cout << 
+      "***  File Object Manipulator  ***\n"
+      "* 0. QUIT                       *\n"
+      "* 1. COPY (Read & Save a file)  *\n"
+      "* 2. FILTER (Reduce a file)     *\n"
+      "* 3. MERGE (Join two files)     *\n"
+      "*********************************\n"
+      "Input a choice(0, 1, 2, 3, 4): ";
+
+      Mission mission;
+      int choice = 0;
+      cin >> choice;
+      cout << "\n";
+      
+      if (choice == 0) {
+        return 0;
+      } else if (choice == 1) {
+        mission.M1();
+      } else if (choice == 2) {
+        mission.M2();
+      } else if (choice == 3) {
+        mission.M3();
+      } else if (choice == 4) {
+        mission.M4();
+      } else {
+        cout << "Command does not exist!\n\n";
+      }
+    }
+}
